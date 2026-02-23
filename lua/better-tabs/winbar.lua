@@ -224,7 +224,15 @@ function M.render_winbar(win)
         if i > start then
             table.insert(parts, "%#BetterTabsSeparator# " .. SEP .. " %*")
         end
-        table.insert(parts, " " .. items[i].text .. " ")
+
+        local tab_id = (win * 1000000) + st.buffers[i]
+
+        table.insert(
+            parts,
+            "%" .. tab_id .. "@v:lua.require'better-tabs'.on_click@" ..
+            " " .. items[i].text .. " " ..
+            "%T"
+        )
     end
 
     -- Right overflow

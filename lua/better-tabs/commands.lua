@@ -28,9 +28,7 @@ function M.info()
     end
 end
 
-function M.close_buffer()
-    local win = vim.api.nvim_get_current_win()
-    local current_buf = vim.api.nvim_get_current_buf()
+local function close_buffer_win_buf(win, buf)
     local st = state.get_state(win)
 
     if not st or #st.buffers == 0 then
@@ -40,7 +38,7 @@ function M.close_buffer()
 
     local current_index = nil
     for i, b in ipairs(st.buffers) do
-        if b == current_buf then
+        if b == buf then
             current_index = i
             break
         end
@@ -53,7 +51,7 @@ function M.close_buffer()
 
     local had_multiple_buffers = #st.buffers > 1
 
-    state.remove_buffer(win, current_buf)
+    state.remove_buffer(win, buf)
 
     st = state.get_state(win)
 
@@ -73,14 +71,14 @@ function M.close_buffer()
     end
 
     vim.schedule(function()
-        if not vim.api.nvim_buf_is_valid(current_buf) then return end
+        if not vim.api.nvim_buf_is_valid(buf) then return end
 
         local buffer_owned = false
         for _, w in ipairs(vim.api.nvim_list_wins()) do
             local win_state = state.get_state(w)
             if win_state then
                 for _, b in ipairs(win_state.buffers) do
-                    if b == current_buf then
+                    if b == buf then
                         buffer_owned = true
                         break
                     end
@@ -90,12 +88,37 @@ function M.close_buffer()
         end
 
         if not buffer_owned then
-            local buf_name = vim.api.nvim_buf_get_name(current_buf)
+            local buf_name = vim.api.nvim_buf_get_name(buf)
             if buf_name ~= "" and not buf_name:match("%[Scratch%]$") and not buf_name:match("%[No Name%]$") then
-                vim.api.nvim_buf_delete(current_buf, { force = true })
+                vim.api.nvim_buf_delete(buf, { force = true })
             end
         end
     end)
+end
+
+function M.close_buffer()
+    local win = vim.api.nvim_get_current_win()
+    local buf = vim.api.nvim_get_current_buf()
+
+    close_buffer_win_buf(win, buf)
+end
+
+function M.close_buffer_by_tab_id(tab_id)
+    -- derive win and bufnr from tab_id
+    local win = math.floor(tab_id / 1000000)
+    local buf = tab_id % 1000000
+
+    close_buffer_win_buf(win, buf)
+end
+
+function M.open_tab_by_id(tab_id)
+    -- derive win and bufnr from tab_id
+    local win = math.floor(tab_id / 1000000)
+    local buf = tab_id % 1000000
+
+    vim.api.nvim_set_current_win(win)
+    vim.api.nvim_set_current_buf(buf)
+
 end
 
 function M.close()

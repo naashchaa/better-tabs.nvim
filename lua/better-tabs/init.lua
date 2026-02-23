@@ -100,4 +100,12 @@ function M.setup()
     )
 end
 
+function M.on_click(tab_id, clicks, button, modifiers)
+    if (button == "l") then
+        commands.open_tab_by_id(tab_id)
+    elseif (button == "r") then
+        commands.close_buffer_by_tab_id(tab_id)
+    end
+end
+
 return M
