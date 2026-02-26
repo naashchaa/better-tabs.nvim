@@ -274,7 +274,7 @@ function M.setup_autocmds()
     local augroup = vim.api.nvim_create_augroup("BetterTabsWinbar", { clear = true })
 
     vim.api.nvim_create_autocmd(
-        { "BufEnter", "BufAdd", "BufWipeout", "WinEnter" },
+        { "BufEnter", "BufWipeout", "WinEnter" },
         {
             group = augroup,
             callback = function(args)

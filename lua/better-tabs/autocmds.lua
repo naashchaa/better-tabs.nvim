@@ -17,7 +17,7 @@ function M.setup()
     -------------------------
     -- 1️⃣ Add buffers on BufEnter and sync index
     -------------------------
-    vim.api.nvim_create_autocmd("BufEnter", {
+    vim.api.nvim_create_autocmd({ "FileType", "TermOpen" }, {
         group = augroup,
 
         callback = function(args)
@@ -28,7 +28,14 @@ function M.setup()
                 return
             end
 
-            if vim.bo[buf].buftype ~= "" then return end
+            local buftype = vim.bo[buf].buftype
+            if buftype ~= "" and buftype ~= "terminal" then return end
+
+            local name = vim.api.nvim_buf_get_name(buf)
+            if name ~= "" and vim.fn.isdirectory(name) == 1 then return end
+
+            local filetype = vim.bo[buf].filetype
+            if filetype == "netrw" then return end
 
             state.add_buffer(win, buf)
 
@@ -68,7 +75,17 @@ function M.setup()
 
             if state.moved_buffers[buf] then return end
 
-            if vim.bo[buf].buftype ~= "" then return end
+            local buftype = vim.bo[buf].buftype
+            if buftype ~= "" and buftype ~= "terminal" then return end
+
+            local name = vim.api.nvim_buf_get_name(buf)
+
+            if name ~= "" and vim.fn.isdirectory(name) == 1 then
+                return
+            end
+
+            local filetype = vim.bo[buf].filetype
+            if filetype == "netrw" then return end
 
             for _, w in ipairs(vim.api.nvim_list_wins()) do
                 local st = state.get_state(w)

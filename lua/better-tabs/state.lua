@@ -25,6 +25,16 @@ end
 function M.init_current_window()
     local win = vim.api.nvim_get_current_win()
     local buf = vim.api.nvim_get_current_buf()
+
+    local buftype = vim.bo[buf].buftype
+    if buftype ~= "" and buftype ~= "terminal" then return end
+
+    local name = vim.api.nvim_buf_get_name(buf)
+    if name ~= "" and vim.fn.isdirectory(name) == 1 then return end
+
+    local filetype = vim.bo[buf].filetype
+    if filetype == "netrw" then return end
+
     set_state(win, { buffers = { buf }, index = 1 })
 end
 
